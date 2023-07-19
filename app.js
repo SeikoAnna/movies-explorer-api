@@ -15,9 +15,10 @@ const errorHandler = require('./middlewares/error');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const limiter = require('./middlewares/limiter');
-const { DB_URL } = require('./utils/urlRegExp');
+const { DEV_DB_URL } = require('./utils/constrains');
 
 const { PORT = 3000 } = process.env;
+const DBUrl = process.env.NODE_ENV !== 'dev' ? DEV_DB_URL : process.env.DB_CONN;
 
 const app = express();
 
@@ -31,11 +32,10 @@ app.use(cors({
   credentials: true,
 }));
 
-mongoose.connect(DB_URL);
+mongoose.connect(DBUrl);
 
 app.use(express.json());
 
-app.use(limiter);
 
 app.use(cookieParser());
 
@@ -46,6 +46,8 @@ app.use(requestLogger);
 app.use(router);
 
 app.use(errorLogger);
+
+app.use(limiter);
 
 app.use(errors());
 

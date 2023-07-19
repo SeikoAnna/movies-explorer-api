@@ -3,6 +3,7 @@ const { ValidationError, CastError } = require('mongoose').Error;
 const BadRequest = require('../utils/errors/BadRequest');
 const Forbidden = require('../utils/errors/Forbidden');
 const NotFound = require('../utils/errors/NotFound');
+const messages = require('../utils/response/movies');
 
 const Movie = require('../models/movie');
 
@@ -20,7 +21,7 @@ const createMovie = (req, res, next) => {
     .then((movie) => res.status(201).send(movie))
     .catch((err) => {
       if (err instanceof ValidationError) {
-        next(new BadRequest('Введены некорректные данные'));
+        next(new BadRequest(messages.errors.INCORRECT_DATA));
       } else {
         next(err);
       }
@@ -29,16 +30,16 @@ const createMovie = (req, res, next) => {
 
 const deleteMovie = (req, res, next) => {
   Movie.findById(req.params.movieId)
-    .orFail(new NotFound('Такой фильм не найден'))
+    .orFail(new NotFound(messages.errors.NOT_FOUND))
     .then((movie) => {
       if (!movie.owner.equals(req.user._id)) {
-        throw new Forbidden('Вы не можете удалить этот фильм');
+        throw new Forbidden(messages.errors.CANT_DELETE);
       }
-      return movie.deleteOne().then(() => res.send({ message: 'Фильм удален' })).catch(next);
+      return movie.deleteOne().then(() => res.send({ message: messages.ok.REMOVED })).catch(next);
     })
     .catch((err) => {
       if (err instanceof CastError) {
-        next(new BadRequest('Введены некорректные данные'));
+        next(new BadRequest(messages.errors.INCORRECT_DATA));
       } else {
         next(err);
       }

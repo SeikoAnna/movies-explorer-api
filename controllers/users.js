@@ -9,6 +9,7 @@ const BadRequest = require('../utils/errors/BadRequest');
 const NotFound = require('../utils/errors/NotFound');
 const Conflict = require('../utils/errors/Conflict');
 const Unauthorized = require('../utils/errors/Unauthorized');
+const messages = require('../utils/response/users');
 
 // const getUsers = (req, res, next) => {
 //   User.find({})
@@ -20,11 +21,11 @@ const getUserById = (req, res, next) => {
   const userId = req.params.id ? req.params.id : req.user._id;
 
   User.findById(userId)
-    .orFail(new NotFound('Пользователь не найден'))
+    .orFail(new NotFound(messages.errors.NOT_FOUND))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err instanceof CastError) {
-        next(new BadRequest('Введены некорректные данные'));
+        next(new BadRequest(messages.errors.INCORRECT_DATA));
       } else {
         next(err);
       }
@@ -45,9 +46,9 @@ const createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err instanceof ValidationError) {
-        next(new BadRequest('Введены некорректные данные'));
+        next(new BadRequest(messages.errors.INCORRECT_DATA));
       } else if (err.code === 11000) {
-        next(new Conflict('Такой email уже существует'));
+        next(new Conflict(messages.errors.EXIST));
       } else {
         next(err);
       }
@@ -61,11 +62,11 @@ const updateUser = (req, res, next) => {
     { name, about },
     { new: true, runValidators: true },
   )
-    .orFail(new NotFound('Пользователь не найден'))
+    .orFail(new NotFound(messages.errors.NOT_FOUND))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err instanceof ValidationError) {
-        return next(new BadRequest('Введены некорректные данные'));
+        return next(new BadRequest(messages.errors.INCORRECT_DATA));
       }
       return next(err);
     });
@@ -93,7 +94,7 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
   User.findOne({ email })
     .select('+password')
-    .orFail(new Unauthorized('Неверный логин или пароль'))
+    .orFail(new Unauthorized(messages.errors.LOG_OR_PASS))
     .then((user) => {
       bcrypt.compare(password, user.password)
         .then((isValidUser) => {
@@ -115,7 +116,7 @@ const login = (req, res, next) => {
             // };
             res.send({ jwt });
           } else {
-            throw new Unauthorized('Неверный логин или пароль');
+            throw new Unauthorized(messages.errors.LOG_OR_PASS);
           }
         })
         .catch(next);
@@ -124,7 +125,7 @@ const login = (req, res, next) => {
 };
 
 const logout = (req, res) => {
-  res.clearCookie('jwt').send({ message: 'Вы вышли из аккаунта' });
+  res.clearCookie('jwt').send({ message: messages.ok.LOGOUT });
 };
 
 module.exports = {
