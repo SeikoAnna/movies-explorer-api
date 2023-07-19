@@ -36,14 +36,13 @@ mongoose.connect(DBUrl);
 
 app.use(express.json());
 
-
 app.use(cookieParser());
 
 app.use(helmet());
 
 app.use(requestLogger);
 
-app.use(router);
+app.use('/api', router);
 
 app.use(errorLogger);
 
