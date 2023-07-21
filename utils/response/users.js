@@ -7,6 +7,6 @@ module.exports = Object.freeze({
 
   },
   ok: {
-    LOGOUT: 'Вы вышли из аккаунта'
+    LOGOUT: 'Вы вышли из аккаунта',
   },
-})
+});

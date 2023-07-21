@@ -7,4 +7,4 @@ module.exports = Object.freeze({
   ok: {
     REMOVED: 'Фильм удален',
   },
-})
+});
