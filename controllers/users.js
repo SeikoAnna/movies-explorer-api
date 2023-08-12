@@ -56,19 +56,25 @@ const createUser = (req, res, next) => {
 };
 
 const updateUser = (req, res, next) => {
-  const { name, about } = req.body;
+  const { name, email } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
-    { name, about },
+    { name, email },
     { new: true, runValidators: true },
   )
-    .orFail(new NotFound(messages.errors.NOT_FOUND))
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err instanceof ValidationError) {
-        return next(new BadRequest(messages.errors.INCORRECT_DATA));
+      if (err.code === 11000) {
+        next(new Conflict(messages.errors.EXIST));
+        return;
       }
-      return next(err);
+
+      if (err instanceof ValidationError) {
+        next(new BadRequest(messages.errors.INCORRECT_DATA));
+        return;
+      }
+
+      next(err);
     });
 };
 
